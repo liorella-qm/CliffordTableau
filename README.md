@@ -1,29 +1,8 @@
-Represents Clifford operations using a table where each column says how that Clifford operation conjugates a generator of the Pauli group.
+This is a simple addition to CliffordTableaus which allows us to calculate the 
+composition of tableaus and their inverses using the table data directly, and only
+elementary arithmetic and logic operations. Thus, cirq is not needed. Dependence 
+on numpy was maintained for reasons of convenience. 
 
-Example usage:
+The API is WIP and I want to converge to the same API as the original Clifford Tableaus.
+The repr is more in line with the mathematical way of working on it using symplectic matrices.
 
-```python
-import cirq
-from clifford_tableau import CliffordTableau
-
-a, b = cirq.LineQubit.range(2)
-circuit = cirq.Circuit(cirq.H(b), cirq.CNOT(a, b), cirq.H(b))
-tableau = CliffordTableau(circuit)
-print(tableau)
-#       | 0  1
-# ------+-xz-xz-
-#  0    | XZ Z_
-#  1    | Z_ XZ
-#  sign | ++ ++
-
-print(tableau(cirq.X(a)))
-# X(0)*Z(1)
-
-print(tableau(cirq.X(a) * cirq.Y(b)))
-# -Y(0)*X(1)
-
-assert tableau == CliffordTableau(cirq.CZ(a, b))
-s = CliffordTableau(cirq.S(a))
-assert s.inverse() == CliffordTableau(cirq.S(a)**-1) != s
-assert s.then(s) == CliffordTableau(cirq.Z(a))
-```
