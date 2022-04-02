@@ -1,3 +1,5 @@
 .idea/*
 
 docs/.ipynb_checkpoints/
+
+__pycache__/
