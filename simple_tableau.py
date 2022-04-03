@@ -58,8 +58,8 @@ class SimpleTableau:
         if not len(alpha) % 2 == 0:
             raise ValueError(f'alpha has len {len(alpha)}, which is not even')
         self._n = len(alpha) // 2
-        # if not _is_symplectic(g, self._n):
-        #     raise ValueError('g is not a symplectic matrix')
+        if not _is_symplectic(g, self._n):
+            raise ValueError('g is not a symplectic matrix')
         self._np_repr = np.vstack((
             g, alpha
         )).astype(np.uint8)
@@ -185,13 +185,7 @@ def _embed_single_qubit_gate(alpha, g, name, target):
 
 
 def _lambda(n):
-    """
-    based on definition here https://arxiv.org/abs/1406.2170
-    """
-    return np.block([
-        [np.zeros((n, n)), np.identity(n)],
-        [np.identity(n), np.zeros((n, n))]
-    ]).astype(np.uint8)
+    return np.diag([1] + [0, 1] * (n - 1), 1) + np.diag([1] + [0, 1] * (n - 1), -1)
 
 
 def _is_symplectic(mat, n):
