@@ -1,6 +1,8 @@
 import numpy as np
+import stim
 
 from simple_tableau import SimpleTableau, _beta, generate_from_name
+from util import stim_to_simple
 
 
 def test_beta():
@@ -162,7 +164,7 @@ def test_inverse():
     s = generate_from_name('s', 0)
     assert s.inverse() == SimpleTableau([[1, 0],
                                          [1, 1]],
-                                         [1, 0])
+                                        [1, 0])
     s0 = generate_from_name('s', 0, 2)
     s1 = generate_from_name('s', 1, 2)
     sy0 = generate_from_name('sy', 0, 2)
@@ -182,3 +184,51 @@ def test_inverse():
     # random circuit
     circ = h0.then(cz).then(h1).then(s0).then(msy0).then(cz).then(msy1)
     assert circ.then(circ.inverse()) == id0.then(id1)
+
+
+def test_convert_from_stim_basic():
+    h_stim = stim.Tableau.from_named_gate('H')
+    h_st = stim_to_simple(h_stim)
+    assert h_st == generate_from_name('h', 0)
+
+
+def test_convert_from_stim_random_basic():
+    # todo: seed
+    c_stim = stim.Tableau.random(2)
+    c_st = stim_to_simple(c_stim)
+
+
+def test_random_circuits_then_1q():
+    for _ in range(100):
+        c_stim1 = stim.Tableau.random(1)
+        c_stim2 = stim.Tableau.random(1)
+        assert stim_to_simple(c_stim1).then(stim_to_simple(c_stim2)) == stim_to_simple(c_stim1.then(c_stim2))
+
+
+def test_random_circuits_inverse_1q():
+    for _ in range(100):
+        c_stim = stim.Tableau.random(1)
+        assert stim_to_simple(c_stim).inverse() == stim_to_simple(c_stim.inverse())
+
+
+def test_random_circuits_then_2q():
+    for i in range(100):
+        print(i)
+        c_stim1 = stim.Tableau.random(2)
+        c_stim2 = stim.Tableau.random(2)
+        c_st1 = stim_to_simple(c_stim1)
+        c_st2 = stim_to_simple(c_stim2)
+        print(c_stim1)
+        print(c_st1)
+        print(c_stim2)
+        print(c_st2)
+        assert stim_to_simple(c_stim1).then(stim_to_simple(c_stim2)) == stim_to_simple(c_stim1.then(c_stim2))
+
+
+def test_random_circuits_inverse_2q():
+    for _ in range(100):
+        c_stim = stim.Tableau.random(2)
+        c_st = stim_to_simple(c_stim)
+        print(c_stim)
+        print(c_st)
+        assert stim_to_simple(c_stim).inverse() == stim_to_simple(c_stim.inverse())

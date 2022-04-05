@@ -1,3 +1,4 @@
 cirq
 pytest
 numpy
+stim
