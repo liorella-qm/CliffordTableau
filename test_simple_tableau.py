@@ -35,7 +35,7 @@ def test_eq():
 
 def test_from_name_single_qubit():
     s = generate_from_name('s', 0)
-    print(s)
+    print('\n', s)
     assert s.g.shape == (2, 2)
     assert len(s.alpha) == 2
     assert np.array_equal(s.g, np.array([[1, 0], [1, 1]], dtype=np.uint8))
@@ -44,6 +44,7 @@ def test_from_name_single_qubit():
 
 def test_from_name_single_qubit_on_2_qubit_operator():
     s = generate_from_name('s', 0, n=2)
+    print('\n', s)
     assert s.g.shape == (4, 4)
     assert len(s.alpha) == 4
     assert np.array_equal(s.g, np.array([[1, 0, 0, 0],
@@ -114,6 +115,18 @@ def test_compose_single_qubit():
 
 
 def test_compose_two_qubit():
+    # single qubit in parallel
+    sy0 = generate_from_name('sy', 0, 2)
+    sy1 = generate_from_name('sy', 1, 2)
+    msy0 = generate_from_name('msy', 0, 2)
+    msy1 = generate_from_name('msy', 1, 2)
+    id0 = generate_from_name('id', 0, 2)
+    id1 = generate_from_name('id', 1, 2)
+    y0 = generate_from_name('y', 0, 2)
+    y1 = generate_from_name('y', 1, 2)
+    assert sy0.then(sy1).then(sy0).then(sy1) == y0.then(y1)
+    assert sy0.then(sy1).then(msy0).then(msy1) == id0.then(id1)
+
     # flipping control and target with hadamards
     h0 = generate_from_name('h', 0, 2)
     h1 = generate_from_name('h', 1, 2)
@@ -143,3 +156,29 @@ def test_compose_two_qubit():
     assert cz == cz_reverse
     assert h1.then(cnot_ab).then(h1) == cz
     assert h0.then(cnot_ba).then(h0) == cz
+
+
+def test_inverse():
+    s = generate_from_name('s', 0)
+    assert s.inverse() == SimpleTableau([[1, 0],
+                                         [1, 1]],
+                                         [1, 0])
+    s0 = generate_from_name('s', 0, 2)
+    s1 = generate_from_name('s', 1, 2)
+    sy0 = generate_from_name('sy', 0, 2)
+    sy1 = generate_from_name('sy', 1, 2)
+    msy0 = generate_from_name('msy', 0, 2)
+    msy1 = generate_from_name('msy', 1, 2)
+    h0 = generate_from_name('h', 0, 2)
+    h1 = generate_from_name('h', 1, 2)
+    id0 = generate_from_name('id', 0, 2)
+    id1 = generate_from_name('id', 1, 2)
+    assert sy0.then(sy1).inverse() == msy0.then(msy1)
+    assert s0.then(sy1).inverse() == msy1.then(s0.inverse())
+
+    cz = generate_from_name('cz', (0, 1), 2)
+    assert cz.inverse() == cz
+
+    # random circuit
+    circ = h0.then(cz).then(h1).then(s0).then(msy0).then(cz).then(msy1)
+    assert circ.then(circ.inverse()) == id0.then(id1)

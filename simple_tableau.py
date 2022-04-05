@@ -30,20 +30,36 @@ def _beta(v, u):
 def _compose_alpha(g1, alpha1, g2, alpha2):
     n = len(alpha1) // 2
     alpha21 = []
-    two_alpha21 = 2 * alpha1 % 4
+    two_alpha21 = np.zeros(2 * n)
     for i in range(2 * n):
-        a = g1[:, i]
-        for j in range(0, 2 * n, 2):
-            ax = a[j]
-            az = a[j + 1]
-            two_alpha21[i] += 2 * ax * alpha2[j] + 2 * az * alpha2[j + 1] % 4
-            if ax * az:
-                s = (_beta(g2[:, j], g2[:, j + 1]) + 1) % 4
-                assert s % 2 == 0, 'expression does not divide by 2'
-                two_alpha21[i] += s % 4
+        b_i = _calc_b_i(g1, g2, i)
+        two_alpha21[i] += (2 * alpha1[i] + 2 * np.dot(g1[:, i], alpha2) + b_i) % 4
         assert two_alpha21[i] % 2 == 0
-        alpha21.append(two_alpha21[i] // 2 % 2)
+        alpha21.append(two_alpha21[i] // 2)
     return np.array(alpha21).astype(np.uint8)
+
+
+def _calc_b_i(g1, g2, i):
+    b_i = 0
+    n = g1.shape[0] // 2
+    for j in range(0, 2 * n, 2):
+        ax = g1[j, i]
+        az = g1[j + 1, i]
+        # two_alpha21[i] += 2 * ax * alpha2[j] + 2 * az * alpha2[j + 1] % 4
+        if ax * az:
+            b_i += (_beta(g2[:, j], g2[:, j + 1]) + 1) % 4
+            assert b_i % 2 == 0, 'expression does not divide by 2'
+    return b_i
+
+
+def _calc_inverse_alpha(g1, alpha1):
+    n = len(alpha1) // 2
+    lam = _lambda(n)
+    inv_g1 = lam @ g1.T @ lam % 2
+    b = np.array([_calc_b_i(g1, inv_g1, i) for i in range(2 * n)])
+    two_alpha2 = -(inv_g1.T @ (2 * alpha1 + b)) % 4
+    assert np.all(two_alpha2 % 2 == 0)
+    return two_alpha2 // 2
 
 
 class SimpleTableau:
@@ -98,6 +114,10 @@ class SimpleTableau:
         g12 = other.g @ self.g % 2
         alpha12 = _compose_alpha(self.g, self.alpha, other.g, other.alpha)
         return SimpleTableau(g12, alpha12)
+
+    def inverse(self) -> 'SimpleTableau':
+        lam = _lambda(self.n)
+        return SimpleTableau((lam @ self.g.T @ lam) % 2, _calc_inverse_alpha(self.g, self.alpha))
 
 
 _single_qubit_gate_conversions = {
