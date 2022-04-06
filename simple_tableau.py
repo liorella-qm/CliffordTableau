@@ -2,7 +2,10 @@ from functools import reduce
 from typing import Dict, Tuple, List, Union
 
 import numpy as np
+import stim
 from numpy.typing import ArrayLike
+
+from util import beta_cirq
 
 
 def g(x0z0, x1z1):
@@ -17,6 +20,7 @@ def g(x0z0, x1z1):
 
 
 def _beta(v, u):
+    return beta_cirq(v, u)
     u = np.array(u)
     v = np.array(v)
     uz = u[1::2]
@@ -30,7 +34,7 @@ def _beta(v, u):
 def _compose_alpha(g1, alpha1, g2, alpha2):
     n = len(alpha1) // 2
     alpha21 = []
-    two_alpha21 = np.zeros(2 * n)
+    two_alpha21 = np.zeros(2 * n, dtype=np.uint8)
     for i in range(2 * n):
         b_i = _calc_b_i(g1, g2, i)
         two_alpha21[i] += (2 * alpha1[i] + 2 * np.dot(g1[:, i], alpha2) + b_i) % 4
@@ -39,16 +43,33 @@ def _compose_alpha(g1, alpha1, g2, alpha2):
     return np.array(alpha21).astype(np.uint8)
 
 
+def _compose_alpha_temp(g1, alpha1, g2, alpha2):
+    n = len(alpha1) // 2
+    alpha21 = []
+    two_alpha21 = np.zeros(2 * n, dtype=np.uint8)
+    for i in range(2 * n):
+        two_alpha21[i] += 2 * alpha1[i]
+        two_alpha21[i] = (two_alpha21[i] + np.dot(g1[::2, i], g1[1::2, i])) % 4
+
+        for j in range(2 * n):
+            two_alpha21[i] = (two_alpha21[i] + _beta(current, g1[j, i] * g2[:, j])) % 4
+            two_alpha21[i] = (two_alpha21[i] + 2 * g1[j, i] * alpha2[j]) % 4
+            current = (current + g1[j, i] * g2[:, j]) % 2
+        assert two_alpha21[i] % 2 == 0
+        alpha21.append(two_alpha21[i] // 2)
+    return np.array(alpha21).astype(np.uint8)
+
+
 def _calc_b_i(g1, g2, i):
-    b_i = 0
+    # add i for every Y in the column of g1
+    b_i = np.dot(g1[::2, i], g1[1::2, i]) % 4
     n = g1.shape[0] // 2
-    for j in range(0, 2 * n, 2):
-        ax = g1[j, i]
-        az = g1[j + 1, i]
-        # two_alpha21[i] += 2 * ax * alpha2[j] + 2 * az * alpha2[j + 1] % 4
-        if ax * az:
-            b_i += (_beta(g2[:, j], g2[:, j + 1]) + 1) % 4
-            assert b_i % 2 == 0, 'expression does not divide by 2'
+
+    # reduce using beta
+    current = np.zeros(2 * n, dtype=np.uint8)
+    for j in range(2 * n):
+        b_i = (b_i + _beta(current, g1[j, i] * g2[:, j])) % 4
+        current = (current + g1[j, i] * g2[:, j]) % 2
     return b_i
 
 
@@ -211,3 +232,26 @@ def _lambda(n):
 def _is_symplectic(mat, n):
     lhs = mat @ _lambda(n) @ mat.T % 2
     return np.all(lhs == _lambda(n))
+
+
+_int_bit_map = {
+    0: [0, 0],
+    1: [1, 0],
+    2: [1, 1],
+    3: [0, 1]
+}
+
+
+def stim_to_simple(tableau: stim._stim_march_sse2.Tableau) -> SimpleTableau:
+    n = len(tableau)
+    g = np.zeros((2 * n, 2 * n), dtype=np.uint8)
+    alpha = np.zeros(2 * n, dtype=np.uint8)
+    for j in range(0, 2 * n, 2):
+        pauli_string_x = tableau.x_output(j // 2)
+        pauli_string_z = tableau.z_output(j // 2)
+        alpha[j] = pauli_string_x.sign.real < 0
+        alpha[j + 1] = pauli_string_z.sign.real < 0
+        for i in range(0, 2 * n, 2):
+            g[i:i + 2, j] = _int_bit_map[pauli_string_x[i // 2]]
+            g[i:i + 2, j + 1] = _int_bit_map[pauli_string_z[i // 2]]
+    return SimpleTableau(g, alpha)

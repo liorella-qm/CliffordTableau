@@ -1,8 +1,8 @@
 import numpy as np
+import numpy.random
 import stim
 
-from simple_tableau import SimpleTableau, _beta, generate_from_name
-from util import stim_to_simple
+from simple_tableau import SimpleTableau, _beta, generate_from_name, stim_to_simple
 
 
 def test_beta():
@@ -19,6 +19,8 @@ def test_beta():
         for j in range(4):
             res[i].append(_beta(dd[i], dd[j]))
             assert res[i][j] == expectation[i][j]
+
+    _beta([1, 1, 0, 0], [0, 0, 1, 1])
 
 
 def test_creation():
@@ -222,13 +224,22 @@ def test_random_circuits_then_2q():
         print(c_st1)
         print(c_stim2)
         print(c_st2)
-        assert stim_to_simple(c_stim1).then(stim_to_simple(c_stim2)) == stim_to_simple(c_stim1.then(c_stim2))
+        assert c_stim1.then(c_stim2).inverse() == c_stim2.inverse().then(c_stim1.inverse())
+        assert c_st1.then(c_st2).inverse() == c_st2.inverse().then(c_st1.inverse())
+        if stim_to_simple(c_stim1).then(stim_to_simple(c_stim2)) != stim_to_simple(c_stim1.then(c_stim2)):
+            print('expected')
+            print(stim_to_simple(c_stim1.then(c_stim2)))
+            print('actual')
+            print(stim_to_simple(c_stim1).then(stim_to_simple(c_stim2)))
+            stim_to_simple(c_stim1).then(stim_to_simple(c_stim2))
+            assert False
 
 
 def test_random_circuits_inverse_2q():
-    for _ in range(100):
+    for _ in range(1000):
         c_stim = stim.Tableau.random(2)
         c_st = stim_to_simple(c_stim)
         print(c_stim)
         print(c_st)
         assert stim_to_simple(c_stim).inverse() == stim_to_simple(c_stim.inverse())
+        assert c_st.inverse().then(c_st) == SimpleTableau(np.identity(4), np.zeros(4))

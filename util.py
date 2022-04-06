@@ -1,25 +1,32 @@
+from typing import Sequence
+
+import cirq
 import numpy as np
-import stim
+from numpy.typing import ArrayLike
 
-from simple_tableau import SimpleTableau
+_pauli_bit_map = {
+    cirq.I: (0, 0),
+    cirq.X: (1, 0),
+    cirq.Z: (0, 1),
+    cirq.Y: (1, 1)
+}
+
+_bit_pauli_map = {value: key for key, value in _pauli_bit_map.items()}
 
 
-def stim_to_simple(tableau: stim._stim_march_sse2.Tableau) -> SimpleTableau:
-    int_bit_map = {
-        0: [0, 0],
-        1: [1, 0],
-        2: [1, 1],
-        3: [0, 1]
-    }
-    n = len(tableau)
-    g = np.zeros((2 * n, 2 * n), dtype=np.uint8)
-    alpha = np.zeros(2 * n, dtype=np.uint8)
-    for j in range(0, 2 * n, 2):
-        pauli_string_x = tableau.x_output(j // 2)
-        pauli_string_z = tableau.z_output(j // 2)
-        alpha[j] = pauli_string_x.sign.real < 0
-        alpha[j + 1] = pauli_string_z.sign.real < 0
-        for i in range(0, 2 * n, 2):
-            g[i:i + 2, j] = int_bit_map[pauli_string_x[i // 2]]
-            g[i:i + 2, j+1] = int_bit_map[pauli_string_z[i // 2]]
-    return SimpleTableau(g, alpha)
+def bit_to_pauli(qubits: Sequence[cirq.LineQubit], bitstring: ArrayLike) -> cirq.PauliString:
+    if len(qubits) * 2 != len(bitstring):
+        raise ValueError('incompatible bitstring length and no. of qubits')
+    seq = cirq.PauliString()
+    for i, q in enumerate(qubits):
+        seq = seq * cirq.PauliString(_bit_pauli_map[tuple(bitstring[2 * i:2 * i + 2])](q))
+    return cirq.PauliString(seq)
+
+
+def beta_cirq(v, u):
+    u = np.array(u)
+    v = np.array(v)
+    qubits = cirq.LineQubit.range(len(u) // 2)
+    scalar = bit_to_pauli(qubits, v) * bit_to_pauli(qubits, (u + v) % 2) * bit_to_pauli(qubits, u)
+    assert scalar == cirq.PauliString() * scalar.coefficient, f"Pauli string {scalar} is not proportional to identity"
+    return int(-np.angle(scalar.coefficient) / np.pi * 2) % 4
