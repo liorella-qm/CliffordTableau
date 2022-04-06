@@ -20,15 +20,23 @@ def g(x0z0, x1z1):
 
 
 def _beta(v, u):
-    return beta_cirq(v, u)
-    u = np.array(u)
-    v = np.array(v)
-    uz = u[1::2]
-    ux = u[::2]
-    vz = v[1::2]
-    vx = v[::2]
-
-    return (np.dot(vz + uz, vx + ux) % 2 - np.dot(vz, vx) % 2 - np.dot(uz, ux) % 2 + 2 * (np.dot(vx, uz) % 2)) % 4
+    lut = [
+        [0, 0, 0, 0],
+        [0, 0, 3, 1],
+        [0, 1, 0, 3],
+        [0, 3, 1, 0]
+    ]
+    lut_map = {
+        (0, 0): 0,
+        (1, 0): 1,
+        (0, 1): 2,
+        (1, 1): 3
+    }
+    n = len(u) // 2
+    beta = 0
+    for i in range(n):
+        beta += lut[lut_map[tuple(v[2 * i:2 * i + 2])]][lut_map[tuple(u[2 * i:2 * i + 2])]]
+    return beta
 
 
 def _compose_alpha(g1, alpha1, g2, alpha2):

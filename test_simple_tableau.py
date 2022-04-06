@@ -214,7 +214,7 @@ def test_random_circuits_inverse_1q():
 
 
 def test_random_circuits_then_2q():
-    for i in range(100):
+    for i in range(1000):
         print(i)
         c_stim1 = stim.Tableau.random(2)
         c_stim2 = stim.Tableau.random(2)
