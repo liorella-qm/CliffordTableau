@@ -51,22 +51,6 @@ def _compose_alpha(g1, alpha1, g2, alpha2):
     return np.array(alpha21).astype(np.uint8)
 
 
-def _compose_alpha_temp(g1, alpha1, g2, alpha2):
-    n = len(alpha1) // 2
-    alpha21 = []
-    two_alpha21 = np.zeros(2 * n, dtype=np.uint8)
-    for i in range(2 * n):
-        two_alpha21[i] += 2 * alpha1[i]
-        two_alpha21[i] = (two_alpha21[i] + np.dot(g1[::2, i], g1[1::2, i])) % 4
-
-        for j in range(2 * n):
-            two_alpha21[i] = (two_alpha21[i] + _beta(current, g1[j, i] * g2[:, j])) % 4
-            two_alpha21[i] = (two_alpha21[i] + 2 * g1[j, i] * alpha2[j]) % 4
-            current = (current + g1[j, i] * g2[:, j]) % 2
-        assert two_alpha21[i] % 2 == 0
-        alpha21.append(two_alpha21[i] // 2)
-    return np.array(alpha21).astype(np.uint8)
-
 
 def _calc_b_i(g1, g2, i):
     # add i for every Y in the column of g1
