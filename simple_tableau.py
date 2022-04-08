@@ -1,22 +1,7 @@
-from functools import reduce
-from typing import Dict, Tuple, List, Union
+from typing import Tuple, Union
 
 import numpy as np
 import stim
-from numpy.typing import ArrayLike
-
-from util import beta_cirq
-
-
-def g(x0z0, x1z1):
-    if np.all(x0z0 == [0, 0]):
-        return 0
-    if np.all(x0z0 == [0, 1]):
-        return x1z1[0] * (1 - 2 * x1z1[1])
-    if np.all(x0z0 == [1, 0]):
-        return x1z1[1] * (2 * x1z1[0] - 1)
-    if np.all(x0z0 == [1, 1]):
-        return x1z1[1] - x1z1[0]
 
 
 def _beta(v, u):
@@ -75,6 +60,10 @@ def _calc_inverse_alpha(g1, alpha1):
 
 
 class SimpleTableau:
+    """
+    A class for representing and acting of Clifford Tableaus using only elementary logical and
+    arithmetic operations. Implements the `CliffordTableau` API.
+    """
     def __init__(self, g, alpha):
         g = np.array(g, dtype=np.uint8)
         alpha = np.array(alpha, dtype=np.uint8)
@@ -91,6 +80,9 @@ class SimpleTableau:
         self._np_repr = np.vstack((
             g, alpha
         )).astype(np.uint8)
+
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError()
 
     @property
     def g(self):
