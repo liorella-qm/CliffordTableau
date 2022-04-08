@@ -51,7 +51,6 @@ def _compose_alpha(g1, alpha1, g2, alpha2):
     return np.array(alpha21).astype(np.uint8)
 
 
-
 def _calc_b_i(g1, g2, i):
     # add i for every Y in the column of g1
     b_i = np.dot(g1[::2, i], g1[1::2, i]) % 4
