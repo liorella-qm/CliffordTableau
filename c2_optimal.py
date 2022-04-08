@@ -15,48 +15,48 @@ _c1_ops = [
     ('Z',),  # XZ -+
     ('Y',),  # XZ --
 
-    ('-X/2',),  # XY ++
-    ('X/2',),  # XY +-
-    ('Y', 'X/2'),  # XY -+
-    ('Y', '-X/2'),  # XY --
+    ('-SX',),  # XY ++
+    ('SX',),  # XY +-
+    ('Y', 'SX'),  # XY -+
+    ('Y', '-SX'),  # XY --
 
-    ('X', '-Y/2'),  # ZX ++
-    ('-Y/2',),  # ZX +-
-    ('Y/2',),  # ZX -+
-    ('X', 'Y/2'),  # ZX --
+    ('X', '-SY'),  # ZX ++
+    ('-SY',),  # ZX +-
+    ('SY',),  # ZX -+
+    ('X', 'SY'),  # ZX --
 
-    ('-X/2', '-Y/2'),  # ZY ++
-    ('X/2', '-Y/2'),  # ZY +-
-    ('-X/2', 'Y/2'),  # ZY -+
-    ('X/2', 'Y/2'),  # ZY --
+    ('-SX', '-SY'),  # ZY ++
+    ('SX', '-SY'),  # ZY +-
+    ('-SX', 'SY'),  # ZY -+
+    ('SX', 'SY'),  # ZY --
 
-    ('Y/2', 'X/2'),  # YX ++
-    ('-Y/2', '-X/2'),  # YX +-
-    ('Y/2', '-X/2'),  # YX -+
-    ('-Y/2', 'X/2'),  # YX --
+    ('SY', 'SX'),  # YX ++
+    ('-SY', '-SX'),  # YX +-
+    ('SY', '-SX'),  # YX -+
+    ('-SY', 'SX'),  # YX --
 
-    ('-X/2', 'Y/2', 'X/2'),  # YZ ++
-    ('X/2', 'Y/2', 'X/2'),  # YZ +-
-    ('-X/2', '-Y/2', 'X/2'),  # YZ -+
-    ('-X/2', 'Y/2', '-X/2'),  # YZ --
+    ('-SX', 'SY', 'SX'),  # YZ ++
+    ('SX', 'SY', 'SX'),  # YZ +-
+    ('-SX', '-SY', 'SX'),  # YZ -+
+    ('-SX', 'SY', '-SX'),  # YZ --
 ]
 
 _s1_ops = [
     ('I',),
-    ('Y/2', 'X/2'),
-    ('-X/2', '-Y/2'),
+    ('SY', 'SX'),
+    ('-SX', '-SY'),
 ]
 
 _s1x2_ops = [
-    ('X/2',),
-    ('X/2', 'Y/2', 'X/2'),
-    ('-Y/2',)
+    ('SX',),
+    ('SX', 'SY', 'SX'),
+    ('-SY',)
 ]
 
 _s1y2_ops = [
-    ('Y/2',),
-    ('Y', 'X/2'),
-    ('-X/2', '-Y/2', 'X/2')
+    ('SY',),
+    ('Y', 'SX'),
+    ('-SX', '-SY', 'SX')
 ]
 
 _gate_from_op = {
@@ -64,15 +64,16 @@ _gate_from_op = {
     'X': cirq.X,
     'Y': cirq.Y,
     'Z': cirq.Z,
-    'X/2': cirq.X ** 0.5,
-    'Y/2': cirq.Y ** 0.5,
-    '-X/2': cirq.X ** -0.5,
-    '-Y/2': cirq.Y ** -0.5,
+    'SX': cirq.X ** 0.5,
+    'SY': cirq.Y ** 0.5,
+    '-SX': cirq.X ** -0.5,
+    '-SY': cirq.Y ** -0.5,
 }
 
 
 class C2Op:
     def __init__(self, index):
+        self.index = index
         if index < 576:
             # single qubit class
             q1c1, q0c1 = np.unravel_index(index, (24, 24))
@@ -89,14 +90,14 @@ class C2Op:
             # iSWAP class
             index -= 576 + 5184
             q1s1, q0s1, q1c1, q0c1 = np.unravel_index(index, (3, 3, 24, 24))
-            self.q0 = (_c1_ops[q0c1], 'cz', ('Y/2',), 'cz', _s1y2_ops[q0s1])
-            self.q1 = (_c1_ops[q1c1], 'cz', ('-X/2',), 'cz', _s1x2_ops[q1s1])
+            self.q0 = (_c1_ops[q0c1], 'cz', ('SY',), 'cz', _s1y2_ops[q0s1])
+            self.q1 = (_c1_ops[q1c1], 'cz', ('-SX',), 'cz', _s1x2_ops[q1s1])
         elif index < 2 * 576 + 2 * 5184:
-            # swap class
+            # SWAP class
             index -= 576 + 2 * 5184
             q1c1, q0c1 = np.unravel_index(index, (24, 24))
-            self.q0 = (_c1_ops[q0c1], 'cz', ('-Y/2',), 'cz', ('Y/2',), 'cz', ('I',))
-            self.q1 = (_c1_ops[q1c1], 'cz', ('Y/2',), 'cz', ('-Y/2',), 'cz', ('Y/2',))
+            self.q0 = (_c1_ops[q0c1], 'cz', ('-SY',), 'cz', ('SY',), 'cz', ('I',))
+            self.q1 = (_c1_ops[q1c1], 'cz', ('SY',), 'cz', ('-SY',), 'cz', ('SY',))
         else:
             raise ValueError(f'index={index} is out of range')
 

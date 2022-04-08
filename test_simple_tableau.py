@@ -30,15 +30,15 @@ def test_creation():
 
 
 def test_eq():
-    id1 = generate_from_name('id', 0)
-    id2 = generate_from_name('id', 0)
-    s = generate_from_name('s', 0)
+    id1 = generate_from_name('I', 0)
+    id2 = generate_from_name('I', 0)
+    s = generate_from_name('S', 0)
     assert id1 == id2
     assert id1 != s
 
 
 def test_from_name_single_qubit():
-    s = generate_from_name('s', 0)
+    s = generate_from_name('S', 0)
     print('\n', s)
     assert s.g.shape == (2, 2)
     assert len(s.alpha) == 2
@@ -47,7 +47,7 @@ def test_from_name_single_qubit():
 
 
 def test_from_name_single_qubit_on_2_qubit_operator():
-    s = generate_from_name('s', 0, n=2)
+    s = generate_from_name('S', 0, n=2)
     print('\n', s)
     assert s.g.shape == (4, 4)
     assert len(s.alpha) == 4
@@ -57,7 +57,7 @@ def test_from_name_single_qubit_on_2_qubit_operator():
                                          [0, 0, 0, 1]], dtype=np.uint8))
     assert np.array_equal(s.alpha, np.zeros_like(s.alpha))
 
-    s = generate_from_name('s', 1, n=2)
+    s = generate_from_name('S', 1, n=2)
     assert s.g.shape == (4, 4)
     assert len(s.alpha) == 4
     assert np.array_equal(s.g, np.array([[1, 0, 0, 0],
@@ -65,43 +65,44 @@ def test_from_name_single_qubit_on_2_qubit_operator():
                                          [0, 0, 1, 0],
                                          [0, 0, 1, 1]], dtype=np.uint8))
     assert np.array_equal(s.alpha, np.zeros_like(s.alpha))
-    y1 = generate_from_name('y', 1, n=2)
+    y1 = generate_from_name('Y', 1, n=2)
 
 
 def test_from_name_two_qubit():
-    gate = generate_from_name('cnot', (0, 1))
+    gate = generate_from_name('CNOT', (0, 1))
     assert gate == SimpleTableau(np.array([[1, 0, 1, 0],
                                            [0, 1, 0, 0],
                                            [0, 0, 1, 0],
                                            [0, 1, 0, 1]]).T,
                                  np.zeros(4))
     # test that flipping control and target works
-    gate = generate_from_name('cnot', (1, 0))
+    gate = generate_from_name('CNOT', (1, 0))
     assert gate == SimpleTableau(np.array([[1, 0, 0, 0],
                                            [0, 1, 0, 1],
                                            [1, 0, 1, 0],
                                            [0, 0, 0, 1]]).T,
                                  np.zeros(4))
-    generate_from_name('swap', (0, 1))
-    generate_from_name('swap', (1, 0))
-    # generate_from_name('iswap', (1, 0))
-    # generate_from_name('iswap', (0, 1))
-    generate_from_name('cz', (0, 1))
-    generate_from_name('cz', (1, 0))
+    generate_from_name('SWAP', (0, 1))
+    generate_from_name('SWAP', (1, 0))
+    # generate_from_name('ISWAP', (1, 0))
+    # generate_from_name('ISWAP', (0, 1))
+    generate_from_name('CZ', (0, 1))
+    generate_from_name('CZ', (1, 0))
 
 
 def test_compose_single_qubit():
-    i2 = generate_from_name('id', 0)
-    s = generate_from_name('s', 0)
-    z = generate_from_name('z', 0)
-    h = generate_from_name('h', 0)
-    sx = generate_from_name('sx', 0)
-    x = generate_from_name('x', 0)
-    sy = generate_from_name('sy', 0)
-    msy = generate_from_name('msy', 0)
-    y = generate_from_name('y', 0)
-    y0 = generate_from_name('y', 0, n=2)
-    y1 = generate_from_name('y', 1, n=2)
+    i2 = generate_from_name('I', 0)
+    s = generate_from_name('S', 0)
+    z = generate_from_name('Z', 0)
+    h = generate_from_name('H', 0)
+    sx = generate_from_name('SX', 0)
+    x = generate_from_name('X', 0)
+    sy = generate_from_name('SY', 0)
+    msy = generate_from_name('-SY', 0)
+    msx = generate_from_name('-SX', 0)
+    y = generate_from_name('Y', 0)
+    y0 = generate_from_name('Y', 0, n=2)
+    y1 = generate_from_name('Y', 1, n=2)
     assert h.then(h) == i2
     assert s.then(s) == z
     assert sx.then(sx) == x
@@ -113,85 +114,85 @@ def test_compose_single_qubit():
     assert msy.then(sy) == i2
     assert sy.then(x) == h
     assert x.then(msy) == h
-
+    assert msx.then(sx) == i2
     assert y1.then(y0) == y0.then(y1)
     assert y1.then(y0) == SimpleTableau(np.identity(4), [1, 1, 1, 1])
 
 
 def test_compose_two_qubit():
     # single qubit in parallel
-    sy0 = generate_from_name('sy', 0, 2)
-    sy1 = generate_from_name('sy', 1, 2)
-    msy0 = generate_from_name('msy', 0, 2)
-    msy1 = generate_from_name('msy', 1, 2)
-    id0 = generate_from_name('id', 0, 2)
-    id1 = generate_from_name('id', 1, 2)
-    y0 = generate_from_name('y', 0, 2)
-    y1 = generate_from_name('y', 1, 2)
+    sy0 = generate_from_name('SY', 0, 2)
+    sy1 = generate_from_name('SY', 1, 2)
+    msy0 = generate_from_name('-SY', 0, 2)
+    msy1 = generate_from_name('-SY', 1, 2)
+    id0 = generate_from_name('I', 0, 2)
+    id1 = generate_from_name('I', 1, 2)
+    y0 = generate_from_name('Y', 0, 2)
+    y1 = generate_from_name('Y', 1, 2)
     assert sy0.then(sy1).then(sy0).then(sy1) == y0.then(y1)
     assert sy0.then(sy1).then(msy0).then(msy1) == id0.then(id1)
 
     # flipping control and target with hadamards
-    h0 = generate_from_name('h', 0, 2)
-    h1 = generate_from_name('h', 1, 2)
-    cnot_ab = generate_from_name('cnot', (0, 1))
-    cnot_ba = generate_from_name('cnot', (1, 0))
+    h0 = generate_from_name('H', 0, 2)
+    h1 = generate_from_name('H', 1, 2)
+    cnot_ab = generate_from_name('CNOT', (0, 1))
+    cnot_ba = generate_from_name('CNOT', (1, 0))
     assert h0.then(h1).then(cnot_ab).then(h0).then(h1) == cnot_ba
 
     # cnot commutation identities
-    x0 = generate_from_name('x', 0, 2)
-    x1 = generate_from_name('x', 1, 2)
-    z0 = generate_from_name('z', 0, 2)
-    z1 = generate_from_name('z', 1, 2)
+    x0 = generate_from_name('X', 0, 2)
+    x1 = generate_from_name('X', 1, 2)
+    z0 = generate_from_name('Z', 0, 2)
+    z1 = generate_from_name('Z', 1, 2)
     assert x0.then(cnot_ab) == cnot_ab.then(x0).then(x1)
     assert z0.then(cnot_ab) == cnot_ab.then(z0)
     assert z1.then(cnot_ab) == cnot_ab.then(z0).then(z1)
     assert x1.then(cnot_ab) == cnot_ab.then(x1)
 
     # swap identity
-    swap = generate_from_name('swap', (0, 1), 2)
-    swap_reverse = generate_from_name('swap', (1, 0), 2)
+    swap = generate_from_name('SWAP', (0, 1), 2)
+    swap_reverse = generate_from_name('SWAP', (1, 0), 2)
     assert swap_reverse == swap
     assert cnot_ab.then(cnot_ba).then(cnot_ab) == swap
 
-    # cz identities
-    cz = generate_from_name('cz', (0, 1), 2)
-    cz_reverse = generate_from_name('cz', (1, 0), 2)
-    assert cz == cz_reverse
-    assert h1.then(cnot_ab).then(h1) == cz
-    assert h0.then(cnot_ba).then(h0) == cz
+    # CZ identities
+    CZ = generate_from_name('CZ', (0, 1), 2)
+    CZ_reverse = generate_from_name('CZ', (1, 0), 2)
+    assert CZ == CZ_reverse
+    assert h1.then(cnot_ab).then(h1) == CZ
+    assert h0.then(cnot_ba).then(h0) == CZ
 
 
 def test_inverse():
-    s = generate_from_name('s', 0)
+    s = generate_from_name('S', 0)
     assert s.inverse() == SimpleTableau([[1, 0],
                                          [1, 1]],
                                         [1, 0])
-    s0 = generate_from_name('s', 0, 2)
-    s1 = generate_from_name('s', 1, 2)
-    sy0 = generate_from_name('sy', 0, 2)
-    sy1 = generate_from_name('sy', 1, 2)
-    msy0 = generate_from_name('msy', 0, 2)
-    msy1 = generate_from_name('msy', 1, 2)
-    h0 = generate_from_name('h', 0, 2)
-    h1 = generate_from_name('h', 1, 2)
-    id0 = generate_from_name('id', 0, 2)
-    id1 = generate_from_name('id', 1, 2)
+    s0 = generate_from_name('S', 0, 2)
+    s1 = generate_from_name('S', 1, 2)
+    sy0 = generate_from_name('SY', 0, 2)
+    sy1 = generate_from_name('SY', 1, 2)
+    msy0 = generate_from_name('-SY', 0, 2)
+    msy1 = generate_from_name('-SY', 1, 2)
+    h0 = generate_from_name('H', 0, 2)
+    h1 = generate_from_name('H', 1, 2)
+    id0 = generate_from_name('I', 0, 2)
+    id1 = generate_from_name('I', 1, 2)
     assert sy0.then(sy1).inverse() == msy0.then(msy1)
     assert s0.then(sy1).inverse() == msy1.then(s0.inverse())
 
-    cz = generate_from_name('cz', (0, 1), 2)
-    assert cz.inverse() == cz
+    CZ = generate_from_name('CZ', (0, 1), 2)
+    assert CZ.inverse() == CZ
 
     # random circuit
-    circ = h0.then(cz).then(h1).then(s0).then(msy0).then(cz).then(msy1)
+    circ = h0.then(CZ).then(h1).then(s0).then(msy0).then(CZ).then(msy1)
     assert circ.then(circ.inverse()) == id0.then(id1)
 
 
 def test_convert_from_stim_basic():
     h_stim = stim.Tableau.from_named_gate('H')
     h_st = stim_to_simple(h_stim)
-    assert h_st == generate_from_name('h', 0)
+    assert h_st == generate_from_name('H', 0)
 
 
 def test_convert_from_stim_random_basic():

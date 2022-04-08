@@ -125,34 +125,35 @@ class SimpleTableau:
 
 
 _single_qubit_gate_conversions = {
-    'id': (np.identity(2), np.zeros(2)),
-    'h': (np.array([[0, 1], [1, 0]]), np.zeros(2)),
-    'x': (np.identity(2), np.array([0, 1])),
-    'z': (np.identity(2), np.array([1, 0])),
-    'y': (np.identity(2), np.array([1, 1])),
-    's': (np.array([[1, 0], [1, 1]]), np.zeros(2)),
-    'sx': (np.array([[1, 1], [0, 1]]), np.array([0, 1])),
-    'sy': (np.array([[0, 1], [1, 0]]), np.array([1, 0])),
-    'msy': (np.array([[0, 1], [1, 0]]), np.array([0, 1]))
+    'I': (np.identity(2), np.zeros(2)),
+    'H': (np.array([[0, 1], [1, 0]]), np.zeros(2)),
+    'X': (np.identity(2), np.array([0, 1])),
+    'Z': (np.identity(2), np.array([1, 0])),
+    'Y': (np.identity(2), np.array([1, 1])),
+    'S': (np.array([[1, 0], [1, 1]]), np.zeros(2)),
+    'SX': (np.array([[1, 1], [0, 1]]), np.array([0, 1])),
+    'SY': (np.array([[0, 1], [1, 0]]), np.array([1, 0])),
+    '-SY': (np.array([[0, 1], [1, 0]]), np.array([0, 1])),
+    '-SX': (np.array([[1, 1], [0, 1]]), np.array([0, 0])),
 }
 
 _two_qubit_gate_conversions = {
-    'cnot': (np.array([[1, 0, 1, 0],
+    'CNOT': (np.array([[1, 0, 1, 0],
                        [0, 1, 0, 0],
                        [0, 0, 1, 0],
                        [0, 1, 0, 1]]).T,
              np.zeros(4)),
-    'iswap': (np.array([[0, 1, 1, 1],
+    'ISWAP': (np.array([[0, 1, 1, 1],
                         [1, 1, 0, 1],
                         [0, 0, 0, 1],
                         [0, 0, 1, 0]]).T,
               np.zeros(4)),  # not 100% sure this is correct
-    'swap': (np.array([[0, 0, 1, 0],
+    'SWAP': (np.array([[0, 0, 1, 0],
                        [0, 0, 0, 1],
                        [1, 0, 0, 0],
                        [0, 1, 0, 0]]).T,
              np.zeros(4)),
-    'cz': (np.array([[1, 0, 0, 1],
+    'CZ': (np.array([[1, 0, 0, 1],
                      [0, 1, 0, 0],
                      [0, 1, 1, 0],
                      [0, 0, 0, 1]]).T,
@@ -169,7 +170,7 @@ def generate_from_name(name: str, target: Union[int, Tuple[int, int]], n=None) -
         name: gate name, must be in `known_names`
         target: For a single qubit gate, the qubit on which the gate operates, from 0 to n-1. For two qubit gates,
                 a tuple of the form (control, target) on which the gate operates
-        n: number of total qubits on which gate operates
+        n: number of total qubits on which gate operates. If omitted, will be determined by the highest target index.
 
     Returns: the `SimpleTableau` object
 
