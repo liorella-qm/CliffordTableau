@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Union, Tuple
 
 import numpy as np
 import cirq
@@ -72,8 +72,24 @@ _gate_from_op = {
 
 
 class C2Op:
-    def __init__(self, index):
+    """
+    A representation of a two-qubit Clifford operator as a series of native gate operations
+    """
+    def __init__(self, index: Union[int, Tuple[int, int]], native_clifford: str):
+        """
+
+        Args:
+            index: either an integer between 0 and 11519 or a pair of integers, the first between 0 and 15 and the
+            second between 0 and 719.
+            In the first case, the Clifford will be built natively. In the second case, it will be built as a
+            concatenation of the Pauli string between 0 and 15 and of the symplectic matrix.
+            native_clifford: either 'CZ', 'ISWAP' or 'CNOT'.
+        """
         self.index = index
+        self.native_clifford = native_clifford
+        if not isinstance(index, int):
+            raise NotImplementedError()
+
         if index < 576:
             # single qubit class
             q1c1, q0c1 = np.unravel_index(index, (24, 24))
