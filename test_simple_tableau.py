@@ -243,3 +243,42 @@ def test_random_circuits_inverse_2q():
         print(c_st)
         assert stim_to_simple(c_stim).inverse() == stim_to_simple(c_stim.inverse())
         assert c_st.inverse().then(c_st) == SimpleTableau(np.identity(4), np.zeros(4))
+
+
+def test_compose_pauli_clifford_2q():
+    """
+    test that pauli and then clifford simply adds the pauli to the clifford
+
+    """
+    for _ in range(1000):
+        c_stim = stim.Tableau.random(2)
+        c_st = stim_to_simple(c_stim)
+        c_st = SimpleTableau(c_st.g, np.zeros(4))  # convert to a tableau with positive signs
+        rand_sign = np.random.randint(0, 2, 4, dtype=np.uint8)
+        rand_pauli = SimpleTableau(np.identity(4), rand_sign)
+        added = SimpleTableau(c_st.g, rand_sign)
+        assert rand_pauli.then(c_st) == added
+
+
+def test_left_coset_equal_to_right_coset():
+    """
+    test that the right coset is simply the symplectic matrix with all the possible signs
+    (i.e the left coset is equal to the right coset)
+    Returns:
+
+    """
+    for _ in range(1000):
+        c_stim = stim.Tableau.random(2)
+        c_st = stim_to_simple(c_stim)
+        c_st = SimpleTableau(c_st.g, np.zeros(4))  # convert to a tableau with positive signs
+        left_coset_signs = set()
+        right_coset_signs = set()
+
+        for i in range(16):
+            binary = np.array([int(s) for s in np.binary_repr(i, 4)], dtype=np.uint8)
+            pauli = SimpleTableau(np.identity(4), binary)
+            left_coset_signs.add(tuple(binary))
+            prod = c_st.then(pauli)
+            right_coset_signs.add(tuple(prod.alpha))
+        assert left_coset_signs == right_coset_signs
+
