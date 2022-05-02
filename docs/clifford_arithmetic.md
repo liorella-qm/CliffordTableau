@@ -1,4 +1,4 @@
-﻿
+
 # Clifford algebra with elementary algebra
 The goal of this work is to perform Clifford group operations (composition and inversion) using elementary arithmetic and logic operations only. In what follows we develop the formalism and the implementation.
 
@@ -60,7 +60,7 @@ This commutation relation is going to be very important in the next section.
 
 The action of a Clifford $C\in \mathcal{C}_n$ (where $\mathcal{C}_n$ is the n qubit Clifford group) on a Pauli $P$ is completely defined by how it maps the "basis" Paulis $X_0,Z_0,\dots X_n,Z_n$. In general, it maps each such basis Pauli to a product of mod-phase Paulis with an overall sign (see [this](http://home.lu.lv/~sd20008/papers/essays/Clifford%20group%20%5Bpaper%5D.pdf)). We denote the corresponding map in the binary vector space as $g$. Thus:
 $$
-CW(v)C^\dagger=(-1)^\alpha(v) W(g(v)).
+CW(v)C^\dagger=(-1)^{\alpha(v)} W(g(v)).
 $$
 
 We can write the mapping explicitly by representing it as a (2n+1)x2n matrix, of the form:
