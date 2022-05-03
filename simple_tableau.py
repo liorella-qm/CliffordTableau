@@ -112,6 +112,9 @@ class SimpleTableau:
     def __eq__(self, other):
         return np.array_equal(self._np_repr, other._np_repr)
 
+    def __hash__(self):
+        return hash(self._np_repr.tobytes())
+
     def then(self, other: 'SimpleTableau') -> 'SimpleTableau':
         if self.n != other.n:
             raise ValueError(f'number of qubits of self={self.n} and of other={other.n} is incompatible')
@@ -122,6 +125,9 @@ class SimpleTableau:
     def inverse(self) -> 'SimpleTableau':
         lam = _lambda(self.n)
         return SimpleTableau((lam @ self.g.T @ lam) % 2, _calc_inverse_alpha(self.g, self.alpha))
+
+    def is_identity(self):
+        return np.array_equal(self.g, np.eye(2 * self.n)) and np.array_equal(self.alpha, np.zeros(2 * self.n))
 
 
 _single_qubit_gate_conversions = {
