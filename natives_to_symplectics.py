@@ -10,6 +10,9 @@ from scipy.linalg import expm
 import cirq
 import pickle
 
+from clifford_tableau import CliffordTableau
+from simple_tableau import SimpleTableau
+
 q1, q2 = cirq.LineQubit.range(2)
 
 I = np.matrix([[1, 0], [0, 1]])  # identity
@@ -71,20 +74,24 @@ C1_reduced = [I,
               X2 @ Y2 @ mX2]
 
 # reduced set of single qubit Clifford Cirq definitions on qubit 1
-C1_reduced_q1 = [[],
-                 cirq.PhasedXZGate(axis_phase_exponent=0, x_exponent=-0.5, z_exponent=0)(q1),
-                 cirq.PhasedXZGate(axis_phase_exponent=0.5, x_exponent=-0.5, z_exponent=1)(q1),
-                 cirq.PhasedXZGate(axis_phase_exponent=0.5, x_exponent=-0.5, z_exponent=-0.5)(q1),
-                 cirq.PhasedXZGate(axis_phase_exponent=0, x_exponent=0.5, z_exponent=0.5)(q1),
-                 cirq.PhasedXZGate(axis_phase_exponent=0, x_exponent=0, z_exponent=0.5)(q1)]
+C1_reduced_q1 = [
+    cirq.PhasedXZGate(axis_phase_exponent=0, x_exponent=0, z_exponent=0)(q1),
+    cirq.PhasedXZGate(axis_phase_exponent=0, x_exponent=-0.5, z_exponent=0)(q1),
+    cirq.PhasedXZGate(axis_phase_exponent=0.5, x_exponent=-0.5, z_exponent=1)(q1),
+    cirq.PhasedXZGate(axis_phase_exponent=0.5, x_exponent=-0.5, z_exponent=-0.5)(q1),
+    cirq.PhasedXZGate(axis_phase_exponent=0, x_exponent=0.5, z_exponent=0.5)(q1),
+    cirq.PhasedXZGate(axis_phase_exponent=0, x_exponent=0, z_exponent=0.5)(q1)
+]
 
 # reduced set of single qubit Clifford Cirq definitions on qubit 2
-C1_reduced_q2 = [[],
-                 cirq.PhasedXZGate(axis_phase_exponent=0, x_exponent=-0.5, z_exponent=0)(q2),
-                 cirq.PhasedXZGate(axis_phase_exponent=0.5, x_exponent=-0.5, z_exponent=1)(q2),
-                 cirq.PhasedXZGate(axis_phase_exponent=0.5, x_exponent=-0.5, z_exponent=-0.5)(q2),
-                 cirq.PhasedXZGate(axis_phase_exponent=0, x_exponent=0.5, z_exponent=0.5)(q2),
-                 cirq.PhasedXZGate(axis_phase_exponent=0, x_exponent=0, z_exponent=0.5)(q2)]
+C1_reduced_q2 = [
+    cirq.PhasedXZGate(axis_phase_exponent=0, x_exponent=0, z_exponent=0)(q2),
+    cirq.PhasedXZGate(axis_phase_exponent=0, x_exponent=-0.5, z_exponent=0)(q2),
+    cirq.PhasedXZGate(axis_phase_exponent=0.5, x_exponent=-0.5, z_exponent=1)(q2),
+    cirq.PhasedXZGate(axis_phase_exponent=0.5, x_exponent=-0.5, z_exponent=-0.5)(q2),
+    cirq.PhasedXZGate(axis_phase_exponent=0, x_exponent=0.5, z_exponent=0.5)(q2),
+    cirq.PhasedXZGate(axis_phase_exponent=0, x_exponent=0, z_exponent=0.5)(q2)
+]
 
 # full single qubit Clifford group unitaries
 C1_full = [I,
@@ -118,14 +125,18 @@ S1 = [I,
       mY2 @ mX2]
 
 # S1 Cirq definitions on qubit 1
-S1_q1 = [[],
-         cirq.PhasedXZGate(axis_phase_exponent=0, x_exponent=0.5, z_exponent=0.5)(q1),
-         cirq.PhasedXZGate(axis_phase_exponent=0.5, x_exponent=-0.5, z_exponent=-0.5)(q1)]
+S1_q1 = [
+    cirq.PhasedXZGate(axis_phase_exponent=0, x_exponent=0, z_exponent=0)(q1),
+    cirq.PhasedXZGate(axis_phase_exponent=0, x_exponent=0.5, z_exponent=0.5)(q1),
+    cirq.PhasedXZGate(axis_phase_exponent=0.5, x_exponent=-0.5, z_exponent=-0.5)(q1)
+]
 
 # S1 Cirq definitions on qubit 2
-S1_q2 = [[],
-         cirq.PhasedXZGate(axis_phase_exponent=0, x_exponent=0.5, z_exponent=0.5)(q2),
-         cirq.PhasedXZGate(axis_phase_exponent=0.5, x_exponent=-0.5, z_exponent=-0.5)(q2)]
+S1_q2 = [
+    cirq.PhasedXZGate(axis_phase_exponent=0, x_exponent=0, z_exponent=0)(q1),
+    cirq.PhasedXZGate(axis_phase_exponent=0, x_exponent=0.5, z_exponent=0.5)(q2),
+    cirq.PhasedXZGate(axis_phase_exponent=0.5, x_exponent=-0.5, z_exponent=-0.5)(q2)
+]
 
 paulis = [I, X, Y, Z]
 twoQBPaulis = [np.kron(i, j) for i in paulis for j in paulis]
@@ -149,22 +160,22 @@ pauliTable = ['II',
               'ZZ']
 
 # ordered list of Clifford tableau columns for each Pauli product
-symplecticTable = [[0, 0, 0, 0],
-                   [0, 1, 0, 0],
-                   [0, 1, 0, 1],
-                   [0, 0, 0, 1],
-                   [1, 0, 0, 0],
-                   [1, 1, 0, 0],
-                   [1, 1, 0, 1],
-                   [1, 0, 0, 1],
-                   [1, 0, 1, 0],
-                   [1, 1, 1, 0],
-                   [1, 1, 1, 1],
-                   [1, 0, 1, 1],
-                   [0, 0, 1, 0],
-                   [0, 1, 1, 0],
-                   [0, 1, 1, 1],
-                   [0, 0, 1, 1]]
+symplecticTable = [[0, 0, 0, 0],  # II
+                   [0, 0, 1, 0],  # IX
+                   [0, 0, 1, 1],  # IY
+                   [0, 0, 0, 1],  # IZ
+                   [1, 0, 0, 0],  # XI
+                   [1, 0, 1, 0],  # XX
+                   [1, 0, 1, 1],  # XY
+                   [1, 0, 0, 1],  # XZ
+                   [1, 1, 0, 0],  # YI
+                   [1, 1, 1, 0],  # YX
+                   [1, 1, 1, 1],  # YY
+                   [1, 1, 0, 1],  # YZ
+                   [0, 1, 0, 0],  # ZI
+                   [0, 1, 1, 0],  # ZX
+                   [0, 1, 1, 1],  # ZY
+                   [0, 1, 0, 1]]  # ZZ
 
 
 def get_pauli_prod(m):
@@ -247,8 +258,8 @@ def get_symplectic_and_phase(m):
     p = np.zeros(4)
 
     s[:, 0], p[0] = get_pauli_prod(m.H @ np.kron(X, I) @ m)
-    s[:, 1], p[1] = get_pauli_prod(m.H @ np.kron(I, X) @ m)
-    s[:, 2], p[2] = get_pauli_prod(m.H @ np.kron(Z, I) @ m)
+    s[:, 1], p[1] = get_pauli_prod(m.H @ np.kron(Z, I) @ m)
+    s[:, 2], p[2] = get_pauli_prod(m.H @ np.kron(I, X) @ m)
     s[:, 3], p[3] = get_pauli_prod(m.H @ np.kron(I, Z) @ m)
 
     return s, p
@@ -485,8 +496,11 @@ print(dupe_count, 'duplicate symplectics')
 data_to_export = {'symplectics': symplectics,  # list of symplectics
                   'phases': phases,  # list of phases
                   'circuits': circuits,  # list of Cirq objects
-                  'unitaries': cirq_unitaries}  # list of unitaries
+                  'unitaries': cirq_unitaries,  # list of unitaries
+                  'commands': commands,  # list of instructions to make gates
+                  }
 
+# todo: verify consistency with SimpleTableau (need to create a CliffordTableau to SimpleTableau converter)
 with open('symplectic_compilation_XZ.pkl', 'wb') as f:
     pickle.dump(data_to_export, f)
 
